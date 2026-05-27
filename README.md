@@ -64,43 +64,18 @@ subdir = "experiment_01"
 j"pdata/$subdir/output.h5"  # => joinpath(root, "rsrc/pdata", "experiment_01", "output.h5")
 ```
 
-Use `jopen` as a drop-in for `open` with a `j`-path:
-
-```julia
-jopen("pdata/results.csv") do io
-    read(io, String)
-end
-```
-
 ## API
 
 ```julia
 # Path resolution
-jpath(path="")                          # resolve a path string
-@j_str                                  # j"..." string macro
-
-# File I/O
-jopen(f, path, args...; kwargs...)      # open(f, jpath(path), ...)
-jread(path, type=String)                # read(jpath(path), type)
-jreadlines(path, args...; kwargs...)    # readlines(jpath(path), ...)
-
-# Directory operations
-jreaddir(path="", args...; kwargs...)   # readdir(jpath(path), ...)
-jmkpath(path)                           # mkpath(jpath(path))
-jcd(path="")                            # cd(jpath(path))
-
-# Predicates
-jisfile(path)                           # isfile(jpath(path))
-jisdir(path)                            # isdir(jpath(path))
-jispath(path)                           # ispath(jpath(path))
-
-# Include
-@jinclude "key/script.jl"              # include(jpath("key/script.jl")) into calling module
+jpath(path="")                  # resolve a path string
+@j_str                          # j"..." string macro
+@jinclude "key/script.jl"      # include(jpath("key/script.jl")) into calling module
 
 # Configuration
-set_root!(path)                         # set project root
-set_proj_dirs!(d::AbstractDict)         # replace all project-relative aliases
-set_other_dirs!(d::AbstractDict)        # replace all absolute path aliases
-add_proj_dir!(key, relpath)             # add one project-relative alias
-add_other_dir!(key, abspath)            # add one absolute path alias
+set_root!(path)                 # set project root
+set_proj_dirs!(d::AbstractDict) # replace all project-relative aliases
+set_other_dirs!(d::AbstractDict)# replace all absolute path aliases
+add_proj_dir!(key, relpath)     # add one project-relative alias
+add_other_dir!(key, abspath)    # add one absolute path alias
 ```
