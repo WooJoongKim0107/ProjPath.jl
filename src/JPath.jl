@@ -1,6 +1,8 @@
 module JPath
 
-export jpath, @j_str, jopen
+export jpath, @j_str, jopen, @jinclude
+export jread, jreadlines, jreaddir
+export jisfile, jisdir, jispath, jmkpath, jcd
 export set_root!, add_proj_dir!, add_other_dir!, set_proj_dirs!, set_other_dirs!
 
 const _PROJ_DIRS_ = Dict{String,String}()
@@ -145,5 +147,64 @@ end
 function jopen(f::Function, path::AbstractString, args...; kwargs...)
     open(f, jpath(path), args...; kwargs...)
 end
+
+"""
+    @jinclude "key/script.jl"
+
+Equivalent to `include(jpath("key/script.jl"))`, but evaluates into the
+*calling* module rather than `JPath`.
+
+Note: this must be a macro because `include` inside a regular function always
+evaluates into the module where the function is defined.
+"""
+macro jinclude(path_expr)
+    mod = __module__
+    return :(Base.include($mod, jpath($(esc(path_expr)))))
+end
+
+"""
+    jread(path, type=String)
+
+Equivalent to `read(jpath(path), type)`. Reads the file contents as `String`
+by default; pass `Vector{UInt8}` for raw bytes.
+"""
+jread(path::AbstractString, type::Type=String) = read(jpath(path), type)
+
+"""
+    jreadlines(path, args...; kwargs...)
+
+Equivalent to `readlines(jpath(path), args...; kwargs...)`.
+"""
+jreadlines(path::AbstractString, args...; kwargs...) = readlines(jpath(path), args...; kwargs...)
+
+"""
+    jreaddir(path="", args...; kwargs...)
+
+Equivalent to `readdir(jpath(path), args...; kwargs...)`.
+"""
+jreaddir(path::AbstractString="", args...; kwargs...) = readdir(jpath(path), args...; kwargs...)
+
+"""
+    jisfile(path)  /  jisdir(path)  /  jispath(path)
+
+Equivalent to `isfile`/`isdir`/`ispath` applied to `jpath(path)`.
+"""
+jisfile(path::AbstractString) = isfile(jpath(path))
+jisdir(path::AbstractString)  = isdir(jpath(path))
+jispath(path::AbstractString) = ispath(jpath(path))
+
+"""
+    jmkpath(path)
+
+Equivalent to `mkpath(jpath(path))`. Creates the directory and all parents.
+"""
+jmkpath(path::AbstractString) = mkpath(jpath(path))
+
+"""
+    jcd(path="")
+
+Equivalent to `cd(jpath(path))`. Changes the working directory to the resolved path.
+"""
+jcd(path::AbstractString="") = cd(jpath(path))
 
 end # module JPath

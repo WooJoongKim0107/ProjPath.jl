@@ -51,5 +51,49 @@ using JPath
             end
             set_root!(root)  # restore for subsequent tests
         end
+
+        set_proj_dirs!(Dict("src" => "src"))
+        set_other_dirs!(Dict{String,String}())
+
+        @testset "@jinclude" begin
+            script = joinpath(root, "src", "hello.jl")
+            mkpath(dirname(script))
+            write(script, "global _jinclude_ran = true\n")
+            @jinclude "src/hello.jl"
+            @test @isdefined(_jinclude_ran) && _jinclude_ran
+        end
+
+        @testset "jread / jreadlines" begin
+            f = joinpath(root, "src", "data.txt")
+            write(f, "line1\nline2\n")
+            @test jread("src/data.txt") == "line1\nline2\n"
+            @test jreadlines("src/data.txt") == ["line1", "line2"]
+        end
+
+        @testset "jreaddir" begin
+            mkpath(joinpath(root, "src", "sub"))
+            entries = jreaddir("src")
+            @test any(==("sub"), entries)
+        end
+
+        @testset "jisfile / jisdir / jispath" begin
+            @test jisfile("src/data.txt")
+            @test !jisdir("src/data.txt")
+            @test jisdir("src")
+            @test jispath("src/data.txt")
+            @test !jispath("src/nonexistent.xyz")
+        end
+
+        @testset "jmkpath" begin
+            jmkpath("src/deep/nested/dir")
+            @test isdir(joinpath(root, "src", "deep", "nested", "dir"))
+        end
+
+        @testset "jcd" begin
+            original = pwd()
+            jcd("src")
+            @test realpath(pwd()) == realpath(joinpath(root, "src"))
+            cd(original)
+        end
     end
 end
