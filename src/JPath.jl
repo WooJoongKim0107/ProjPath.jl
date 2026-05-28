@@ -85,6 +85,13 @@ function _root()
     isempty(r) ? get(ENV, "JPATH_ROOT", ".") : r
 end
 
+_jpath_parts(path::AbstractString) = filter!(!isempty, split(String(path), '/'))
+
+function _jpath_join(base::AbstractString, path::AbstractString)
+    parts = _jpath_parts(path)
+    isempty(parts) ? String(base) : joinpath(base, parts...)
+end
+
 """
     jpath(path="") -> String
 
@@ -126,10 +133,10 @@ function jpath(path::AbstractString="")
     else
         root = expanduser(_root())
         rel = get(_PROJ_DIRS_, head, head)
-        isempty(rel) ? root : joinpath(root, rel)
+        isempty(rel) ? root : _jpath_join(root, rel)
     end
 
-    isnothing(tail) ? base : joinpath(base, tail)
+    isnothing(tail) ? base : _jpath_join(base, tail)
 end
 
 """
