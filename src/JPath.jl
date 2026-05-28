@@ -2,6 +2,7 @@ module JPath
 
 export jpath, @j_str, @jinclude
 export set_root!, add_proj_dir!, add_other_dir!, set_proj_dirs!, set_other_dirs!
+export clear_setups!
 
 const _PROJ_DIRS_ = Dict{String,String}()
 const _OTHER_DIRS_ = Dict{String,String}()
@@ -61,6 +62,22 @@ Replace all absolute path aliases at once.
 function set_other_dirs!(d::AbstractDict)
     empty!(_OTHER_DIRS_)
     merge!(_OTHER_DIRS_, d)
+end
+
+"""
+    clear_setups!()
+
+Clear all JPath configuration from the current Julia process.
+
+This removes the in-memory root override, all project-relative aliases, all
+absolute path aliases, and the `JPATH_ROOT` environment variable.
+"""
+function clear_setups!()
+    _ROOT_[] = ""
+    empty!(_PROJ_DIRS_)
+    empty!(_OTHER_DIRS_)
+    delete!(ENV, "JPATH_ROOT")
+    return nothing
 end
 
 function _root()
@@ -128,7 +145,7 @@ j"\$subdir/data/file.h5"  # interpolated at macro-expansion time
 """
 macro j_str(s)
     ex = Meta.parse("\"$s\"")
-    return :(jpath($ex))
+    return :(jpath($(esc(ex))))
 end
 
 """

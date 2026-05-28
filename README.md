@@ -46,6 +46,8 @@ JPath.set_other_dirs!(Dict(
 
 The project root can also be set via the `JPATH_ROOT` environment variable,
 which is useful on machines where you don't want to modify `startup.jl`.
+Use `JPath.clear_setups!()` to remove all JPath settings from the current
+Julia process and return to the default root `"."`.
 
 ## Usage
 
@@ -78,4 +80,5 @@ set_proj_dirs!(d::AbstractDict) # replace all project-relative aliases
 set_other_dirs!(d::AbstractDict)# replace all absolute path aliases
 add_proj_dir!(key, relpath)     # add one project-relative alias
 add_other_dir!(key, abspath)    # add one absolute path alias
+clear_setups!()                 # clear root, aliases, and JPATH_ROOT
 ```
