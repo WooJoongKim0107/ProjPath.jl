@@ -62,9 +62,9 @@ end
                 set_root!(root)
                 set_proj_dirs!(Dict("data" => "rsrc/data", "pdata" => "rsrc/pdata"))
 
-                @test jpath("data") == joinpath(root, "rsrc/data")
-                @test jpath("data/file.csv") == joinpath(root, "rsrc/data", "file.csv")
-                @test jpath("pdata/nested/file.h5") == joinpath(root, "rsrc/pdata", "nested", "file.h5")
+                @test jpath("data") == joinpath(root, "rsrc", "data")
+                @test jpath("data/file.csv") == joinpath(root, "rsrc", "data", "file.csv")
+                @test jpath("pdata/nested/file.h5") == joinpath(root, "rsrc", "pdata", "nested", "file.h5")
 
                 set_proj_dirs!(Dict("root" => ""))
                 @test jpath("root") == root
@@ -135,7 +135,7 @@ end
                 set_proj_dirs!(Dict("data" => "rsrc/data"))
                 set_other_dirs!(Dict("home" => "~"))
 
-                @test jpath("data/file.csv") == joinpath(root, "rsrc/data", "file.csv")
+                @test jpath("data/file.csv") == joinpath(root, "rsrc", "data", "file.csv")
                 @test jpath("home/docs") == joinpath(expanduser("~"), "docs")
 
                 @test clear_setups!() === nothing
@@ -157,8 +157,8 @@ end
                 set_other_dirs!(Dict("home" => "~"))
 
                 subdir = "experiment_01"
-                @test j"data/file.csv" == joinpath(root, "rsrc/data", "file.csv")
-                @test j"data/$subdir/output.h5" == joinpath(root, "rsrc/data", subdir, "output.h5")
+                @test j"data/file.csv" == joinpath(root, "rsrc", "data", "file.csv")
+                @test j"data/$subdir/output.h5" == joinpath(root, "rsrc", "data", subdir, "output.h5")
                 @test j"home/docs" == joinpath(expanduser("~"), "docs")
             end
         end

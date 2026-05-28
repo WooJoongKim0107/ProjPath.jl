@@ -29,6 +29,8 @@ end
 
 Register a project-relative directory alias so that `j"key/file"` resolves to
 `joinpath(root, relpath, "file")`.
+
+Use `/` as the separator in aliases on every OS.
 """
 function add_proj_dir!(key::AbstractString, relpath::AbstractString)
     _PROJ_DIRS_[String(key)] = String(relpath)
@@ -39,6 +41,8 @@ end
 
 Register an absolute path alias so that `j"key/file"` resolves to
 `joinpath(expanduser(abspath), "file")`.
+
+Use `/` as the separator in aliases on every OS.
 """
 function add_other_dir!(key::AbstractString, abspath::AbstractString)
     _OTHER_DIRS_[String(key)] = String(abspath)
@@ -97,6 +101,8 @@ end
 
 Resolve `path` using registered aliases and the configured project root.
 
+Use `/` as the separator in JPath strings on every OS, including Windows.
+
 Resolution rules:
 - `jpath()` or `jpath("")` returns the project root.
 - If the first `/`-separated component of `path` matches a key in the "other
@@ -116,8 +122,8 @@ JPath.set_proj_dirs!(Dict("data" => "rsrc/data", "pdata" => "rsrc/pdata"))
 JPath.set_other_dirs!(Dict("~" => "~", "dotfiles" => "~/dotfiles"))
 
 jpath()                  # => expanduser("~/Projects/MyProject.jl")
-jpath("data")            # => joinpath(root, "rsrc/data")
-jpath("pdata/file.csv")  # => joinpath(root, "rsrc/pdata", "file.csv")
+jpath("data")            # => joinpath(root, "rsrc", "data")
+jpath("pdata/file.csv")  # => joinpath(root, "rsrc", "pdata", "file.csv")
 jpath("dotfiles/zshrc")  # => joinpath(expanduser("~/dotfiles"), "zshrc")
 ```
 """
@@ -144,6 +150,8 @@ end
 
 String macro shorthand for [`jpath`](@ref). Supports `\$`-interpolation.
 
+Use `/` as the separator in `j"..."` strings on every OS, including Windows.
+
 ```julia
 j"pdata/results.csv"
 j"dotfiles/zshrc"
@@ -160,6 +168,8 @@ end
 
 Equivalent to `include(jpath("key/script.jl"))`, but evaluates into the
 *calling* module rather than `JPath`.
+
+Use `/` as the separator in `@jinclude` paths on every OS, including Windows.
 
 Note: this must be a macro because `include` inside a regular function always
 evaluates into the module where the function is defined.

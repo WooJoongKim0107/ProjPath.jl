@@ -44,6 +44,10 @@ JPath.set_other_dirs!(Dict(
 ))
 ```
 
+Use `/` as the separator in JPath aliases and paths on every OS, including
+Windows. JPath converts project-relative aliases and path tails to native
+filesystem paths internally.
+
 The project root can also be set via the `JPATH_ROOT` environment variable,
 which is useful on machines where you don't want to modify `startup.jl`.
 Use `JPath.clear_setups!()` to remove all JPath settings from the current
@@ -53,7 +57,7 @@ Julia process and return to the default root `"."`.
 
 | Expression | Resolves to |
 |---|---|
-| `j"pdata/file.csv"` | `joinpath(root, "rsrc/pdata", "file.csv")` |
+| `j"pdata/file.csv"` | `joinpath(root, "rsrc", "pdata", "file.csv")` |
 | `j"src"` | `joinpath(root, "src")` |
 | `j"dotfiles/zshrc"` | `joinpath(expanduser("~/dotfiles"), "zshrc")` |
 | `jpath()` | the project root |
@@ -63,7 +67,7 @@ Julia process and return to the default root `"."`.
 
 ```julia
 subdir = "experiment_01"
-j"pdata/$subdir/output.h5"  # => joinpath(root, "rsrc/pdata", "experiment_01", "output.h5")
+j"pdata/$subdir/output.h5"  # => joinpath(root, "rsrc", "pdata", "experiment_01", "output.h5")
 ```
 
 ## API
