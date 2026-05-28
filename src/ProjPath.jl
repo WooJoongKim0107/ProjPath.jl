@@ -1,4 +1,4 @@
-module JPath
+module ProjPath
 
 export jpath, @j_str, @jinclude
 export set_root!, add_proj_dir!, add_other_dir!, set_proj_dirs!, set_other_dirs!
@@ -12,12 +12,12 @@ const _ROOT_ = Ref{String}("")
     set_root!(path)
 
 Set the project root directory used by [`jpath`](@ref). Overrides the
-`JPATH_ROOT` environment variable.
+`PROJPATH_ROOT` environment variable.
 
 Typically called in `~/.julia/config/startup.jl`:
 ```julia
-using JPath
-JPath.set_root!("~/Projects/MyProject.jl")
+using ProjPath
+ProjPath.set_root!("~/Projects/MyProject.jl")
 ```
 """
 function set_root!(path::AbstractString)
@@ -71,22 +71,22 @@ end
 """
     clear_setups!()
 
-Clear all JPath configuration from the current Julia process.
+Clear all ProjPath configuration from the current Julia process.
 
 This removes the in-memory root override, all project-relative aliases, all
-absolute path aliases, and the `JPATH_ROOT` environment variable.
+absolute path aliases, and the `PROJPATH_ROOT` environment variable.
 """
 function clear_setups!()
     _ROOT_[] = ""
     empty!(_PROJ_DIRS_)
     empty!(_OTHER_DIRS_)
-    delete!(ENV, "JPATH_ROOT")
+    delete!(ENV, "PROJPATH_ROOT")
     return nothing
 end
 
 function _root()
     r = _ROOT_[]
-    isempty(r) ? get(ENV, "JPATH_ROOT", ".") : r
+    isempty(r) ? get(ENV, "PROJPATH_ROOT", ".") : r
 end
 
 _jpath_parts(path::AbstractString) = filter!(!isempty, split(String(path), '/'))
@@ -101,7 +101,7 @@ end
 
 Resolve `path` using registered aliases and the configured project root.
 
-Use `/` as the separator in JPath strings on every OS, including Windows.
+Use `/` as the separator in ProjPath strings on every OS, including Windows.
 
 Resolution rules:
 - `jpath()` or `jpath("")` returns the project root.
@@ -112,14 +112,14 @@ Resolution rules:
 
 The project root is resolved in this priority order:
 1. A value set via [`set_root!`](@ref)
-2. The `JPATH_ROOT` environment variable
+2. The `PROJPATH_ROOT` environment variable
 3. The current directory `"."`
 
 # Examples
 ```julia
-JPath.set_root!("~/Projects/MyProject.jl")
-JPath.set_proj_dirs!(Dict("data" => "rsrc/data", "pdata" => "rsrc/pdata"))
-JPath.set_other_dirs!(Dict("~" => "~", "dotfiles" => "~/dotfiles"))
+ProjPath.set_root!("~/Projects/MyProject.jl")
+ProjPath.set_proj_dirs!(Dict("data" => "rsrc/data", "pdata" => "rsrc/pdata"))
+ProjPath.set_other_dirs!(Dict("~" => "~", "dotfiles" => "~/dotfiles"))
 
 jpath()                  # => expanduser("~/Projects/MyProject.jl")
 jpath("data")            # => joinpath(root, "rsrc", "data")
@@ -167,7 +167,7 @@ end
     @jinclude "key/script.jl"
 
 Equivalent to `include(jpath("key/script.jl"))`, but evaluates into the
-*calling* module rather than `JPath`.
+*calling* module rather than `ProjPath`.
 
 Use `/` as the separator in `@jinclude` paths on every OS, including Windows.
 
@@ -179,4 +179,4 @@ macro jinclude(path_expr)
     return :(Base.include($mod, jpath($(esc(path_expr)))))
 end
 
-end # module JPath
+end # module ProjPath

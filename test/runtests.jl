@@ -1,8 +1,8 @@
 using Test
-using JPath
+using ProjPath
 
-function with_clean_jpath(f)
-    old_env = get(ENV, "JPATH_ROOT", nothing)
+function with_clean_projpath(f)
+    old_env = get(ENV, "PROJPATH_ROOT", nothing)
 
     try
         clear_setups!()
@@ -11,26 +11,26 @@ function with_clean_jpath(f)
         clear_setups!()
 
         if old_env === nothing
-            delete!(ENV, "JPATH_ROOT")
+            delete!(ENV, "PROJPATH_ROOT")
         else
-            ENV["JPATH_ROOT"] = old_env
+            ENV["PROJPATH_ROOT"] = old_env
         end
     end
 end
 
-@testset "JPath.jl" begin
-    # Root resolution should fall back to ".", honor JPATH_ROOT, and let
+@testset "ProjPath.jl" begin
+    # Root resolution should fall back to ".", honor PROJPATH_ROOT, and let
     # set_root! take precedence over the environment.
     @testset "root resolution" begin
-        with_clean_jpath() do
+        with_clean_projpath() do
             @test jpath() == expanduser(".")
             @test jpath("") == expanduser(".")
         end
 
         mktempdir() do env_root
             mktempdir() do configured_root
-                with_clean_jpath() do
-                    ENV["JPATH_ROOT"] = env_root
+                with_clean_projpath() do
+                    ENV["PROJPATH_ROOT"] = env_root
                     @test jpath() == env_root
                     @test jpath("") == env_root
 
@@ -45,7 +45,7 @@ end
     # Paths whose first component is not registered resolve relative to root.
     @testset "unregistered paths are root-relative" begin
         mktempdir() do root
-            with_clean_jpath() do
+            with_clean_projpath() do
                 set_root!(root)
 
                 @test jpath("subdir") == joinpath(root, "subdir")
@@ -58,7 +58,7 @@ end
     # Project aliases map the first path component to a root-relative directory.
     @testset "project aliases" begin
         mktempdir() do root
-            with_clean_jpath() do
+            with_clean_projpath() do
                 set_root!(root)
                 set_proj_dirs!(Dict("data" => "rsrc/data", "pdata" => "rsrc/pdata"))
 
@@ -76,7 +76,7 @@ end
     # Other aliases map the first path component to an expanduser-based path.
     @testset "other aliases" begin
         mktempdir() do root
-            with_clean_jpath() do
+            with_clean_projpath() do
                 set_root!(root)
                 set_other_dirs!(Dict("home" => "~", "config" => "~/.julia/config"))
 
@@ -91,7 +91,7 @@ end
     # tables.
     @testset "other aliases take precedence over project aliases" begin
         mktempdir() do root
-            with_clean_jpath() do
+            with_clean_projpath() do
                 set_root!(root)
                 set_proj_dirs!(Dict("shared" => "project/shared"))
                 set_other_dirs!(Dict("shared" => "~/.julia"))
@@ -105,7 +105,7 @@ end
     # set_*_dirs! replaces existing aliases, while add_*_dir! appends one alias.
     @testset "configuration mutators" begin
         mktempdir() do root
-            with_clean_jpath() do
+            with_clean_projpath() do
                 set_root!(root)
                 set_proj_dirs!(Dict("old" => "old"))
                 set_proj_dirs!(Dict("new" => "new"))
@@ -125,13 +125,13 @@ end
         end
     end
 
-    # clear_setups! removes all in-process state and the JPATH_ROOT environment
+    # clear_setups! removes all in-process state and the PROJPATH_ROOT environment
     # variable, returning resolution to the default root.
     @testset "clear_setups!" begin
         mktempdir() do root
-            with_clean_jpath() do
+            with_clean_projpath() do
                 set_root!(root)
-                ENV["JPATH_ROOT"] = joinpath(root, "env")
+                ENV["PROJPATH_ROOT"] = joinpath(root, "env")
                 set_proj_dirs!(Dict("data" => "rsrc/data"))
                 set_other_dirs!(Dict("home" => "~"))
 
@@ -139,7 +139,7 @@ end
                 @test jpath("home/docs") == joinpath(expanduser("~"), "docs")
 
                 @test clear_setups!() === nothing
-                @test !haskey(ENV, "JPATH_ROOT")
+                @test !haskey(ENV, "PROJPATH_ROOT")
                 @test jpath() == expanduser(".")
                 @test jpath("data/file.csv") == joinpath(expanduser("."), "data", "file.csv")
                 @test jpath("home/docs") == joinpath(expanduser("."), "home", "docs")
@@ -151,7 +151,7 @@ end
     # interpolation.
     @testset "string macro" begin
         mktempdir() do root
-            with_clean_jpath() do
+            with_clean_projpath() do
                 set_root!(root)
                 set_proj_dirs!(Dict("data" => "rsrc/data"))
                 set_other_dirs!(Dict("home" => "~"))
@@ -164,10 +164,10 @@ end
         end
     end
 
-    # @jinclude should include resolved files into the calling module, not JPath.
+    # @jinclude should include resolved files into the calling module, not ProjPath.
     @testset "@jinclude includes into caller module" begin
         mktempdir() do root
-            with_clean_jpath() do
+            with_clean_projpath() do
                 set_root!(root)
                 set_proj_dirs!(Dict("src" => "src"))
 
@@ -176,10 +176,10 @@ end
                 write(script, "included_value() = :from_jinclude\n")
 
                 test_module = Module(:JIncludeTarget)
-                Core.eval(test_module, :(using JPath))
+                Core.eval(test_module, :(using ProjPath))
                 Core.eval(test_module, :(@jinclude "src/hello.jl"))
 
-                @test !isdefined(JPath, :included_value)
+                @test !isdefined(ProjPath, :included_value)
                 @test Core.eval(test_module, :(included_value())) == :from_jinclude
             end
         end
